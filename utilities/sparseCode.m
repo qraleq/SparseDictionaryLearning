@@ -1,11 +1,10 @@
-function [ X ] = sparseCode( Y, X, D, T0, nIter, varargin )
+function [ X ] = sparseCode( Y, D, T0, nIter, varargin )
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
 
 p = inputParser;
 
 p.addRequired('Y', @ismatrix);
-p.addRequired('X', @ismatrix);
 p.addRequired('D', @ismatrix);
 p.addRequired('T0', @(x) isnumeric(x) && x>0);
 p.addRequired('nIter', @(x) isnumeric(x) && x>0);
@@ -13,7 +12,7 @@ p.addParameter('StepSize', 0, @isnumeric);
 p.addParameter('Plot', 0, @isnumeric);
 p.addParameter('Verbose', 0, @isnumeric);
 
-p.parse(Y, X, D, T0, nIter, varargin{:})
+p.parse(Y, D, T0, nIter, varargin{:})
 
 
 if(p.Results.StepSize == 0)
@@ -23,7 +22,7 @@ else
 end
 
 % initialization
-% X = zeros(size(D, 2), size(Y, 2));
+X = zeros(size(D, 2), size(Y, 2));
 
 % gradient descent step
 tau = 1.6/norm(D*D');
@@ -53,7 +52,7 @@ for jj = 1:step:size(Y,2)
     for i = 1:nIter
         R = D*X_tmp-Y(:,jj:jumpSize);
         
-                X_tmp = strictThreshold(X_tmp-tau*D'*R, T0);
+        X_tmp = strictThreshold(X_tmp-tau*D'*R, T0);
         
         %         th = tau*lambda;
 %         X_tmp = softThreshold(X_tmp-tau*D'*R, th');

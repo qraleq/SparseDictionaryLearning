@@ -27,20 +27,23 @@ imagePath = '.\data\barb.png';
 image = im2double(imresize(imread(imagePath), 1));
 
 % add additive noise noise
-sigma = 0.1;
-image = image + sigma*randn(size(image));
+% sigma = 0.1;
+% image = image + sigma*randn(size(image));
 
 [imH, imW] = size(image);
 
 %% EXTRACT IMAGE PATCHES & INITIALIZE DICTIONARY D0 & PLOT DICTIONARY
 
-[~, Y] = extractImagePatches(image, blockSize, 'rand', 'nBlocks', 1000);
+[~, Y] = extractImagePatches(image, blockSize, 'rand', 'nPatches', 1000);
+
+% Y = kron(dctmtx(16),dctmtx(16))*Y;
+
 Y = Y - repmat(mean(Y, 1), [blockSize^2,1]);
 
 D0 = initDictionaryFromPatches(n, K, Y);
 
 % ALTERNATIVE: generate overcomplete DCT dictionary
-% D0 = overcompleteDCTdictionary(n, p);
+% D0 = overcompleteDCTdictionary(n, K);
 
 visualizeDictionary(D0);
 title('Initial Dictionary')
@@ -49,12 +52,12 @@ title('Initial Dictionary')
 D = D0;
 X = zeros(size(D, 2), size(Y, 2));
 
-X = sparseCode(Y, X, D, T0, 20, 'Plot', 0);
+X = sparseCode(Y, D, T0, 20, 'Plot', 0);
 
 %% UPDATE DICTIONARY D
 D = D0;
 
-D = updateDictionary(Y, X, D, 'ksvd', 'nIter', 15, 'Plot', 0);
+D = updateDictionary(Y, X, D, 'ksvd', 'nIter', 15, 'Plot', 0, 'Verbose', 1);
 
 
 %% DICTIONARY LEARNING
@@ -73,28 +76,8 @@ sigma = 0.1;
 lambda = 1.5 * sigma;
 
 
-for iter = 1:niter_learn
-    fprintf('Dictionary Learning Iteration No. %d\n', iter);
+[D, X, E0] = learnDictionary(Y, D, T0, 'Plot', 1);
 
-    %%%%%%%%%%%%%%%% coefficient calculation %%%%%%%%%%%%%%%%%%%%%%%
-    X = sparseCode(Y, X, D, T0, niter_coeff);
-    
-    E0(end+1) = norm(Y-D*X, 'fro')^2;
-    
-    %%%%%%%%%%%%%%%% dictionary update %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    [D, X] = updateDictionary(Y, X, D, 'ksvd', 'nIter', niter_dict);
-
-    E0(end+1) = nor(Y-D*X, 'fro')^2;
-end
-
-
-figure,
-hold on
-plot(1:2*niter_learn, E0);
-plot(1:2:2*niter_learn, E0(1:2:2*niter_learn), '*');
-plot(2:2:2*niter_learn, E0(2:2:2*niter_learn), 'o');
-axis tight;
-legend('|Y-DX|^2', 'After coefficient update', 'After dictionary update');
 
 %% DICTIONARY LEARNING - SPAMS
 
@@ -107,7 +90,7 @@ param.D = D0;
 D = mexTrainDL(Y, param);
 
 %%
-
+figure
 visualizeDictionary(D)
 title('Final Dictionary')
 

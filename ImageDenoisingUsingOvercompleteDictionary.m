@@ -34,7 +34,7 @@ image = image + sigma*randn(size(image));
 
 %% EXTRACT IMAGE PATCHES & INITIALIZE DICTIONARY D0 & PLOT DICTIONARY
 
-[~, Y] = extractImagePatches(image, blockSize, 'rand', 'nBlocks', 5000);
+[~, Y] = extractImagePatches(image, blockSize, 'rand', 'nPatches', 5000);
 % [~, Y] = extractImagePatches(image, blockSize, 'seq', 'Overlap', 0);
 
 Y = Y - repmat(mean(Y, 1), [blockSize^2,1]);
@@ -66,7 +66,7 @@ for iter = 1:niter_learn
     fprintf('Dictionary Learning Iteration No. %d\n', iter);
 
     %%%%%%%%%%%%%%%% coefficient calculation %%%%%%%%%%%%%%%%%%%%%%%
-    X = sparseCode(Y, X, D, T0, niter_coeff, 'StepSize', 20000, 'Verbose', 1);
+    X = sparseCode(Y, D, T0, niter_coeff, 'StepSize', 20000, 'Verbose', 1);
     
     E0(end+1) = norm(Y-D*X, 'fro')^2;
     
@@ -96,6 +96,7 @@ legend('|Y-DX|^2', 'After coefficient update', 'After dictionary update');
 % D = mexTrainDL(Y, param);
 
 %%
+figure
 visualizeDictionary(D)
 title('Final Dictionary')
 
@@ -107,7 +108,7 @@ meanY = mean(Y, 1);
 Y = Y - repmat(mean(Y, 1), [blockSize^2,1]);
 
 X = zeros(size(D, 2), size(Y, 2));
-X = sparseCode(Y, X, D, 5, 10, 'StepSize', 10000, 'Plot', 0, 'Verbose', 1);
+X = sparseCode(Y, D, 5, 10, 'StepSize', 10000, 'Plot', 0, 'Verbose', 1);
 
 
 PA = reshape((D*X), [blockSize blockSize size(Y, 2)]);

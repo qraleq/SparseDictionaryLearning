@@ -8,7 +8,7 @@ p.addRequired('image', @ismatrix);
 p.addRequired('blockSize', @(x) isnumeric(x) && (x>0));
 p.addRequired('mode', @isstr);
 p.addParameter('Overlap', 0, @(x) isnumeric(x) && (x>=0));
-p.addParameter('nBlocks', 0, @(x) isnumeric(x) && (x>0));
+p.addParameter('nPatches', 0, @(x) isnumeric(x) && (x>0));
 
 p.parse(image, blockSize, mode, varargin{:});
 
@@ -39,6 +39,10 @@ if(strcmp(p.Results.mode, 'seq'))
     Yp(Yp>imW) = 2*imW-Yp(Yp>imW);
     
     patches = image(Xp+(Yp-1)*imH);
+    
+%     h = fspecial('log', blockSize);
+%     patches = patches .* repmat(h, 1, 1, size(patches, 3));
+    
     patchesVectorized  = reshape(patches, [blockSize^2, m]);
 
 end
@@ -47,7 +51,7 @@ end
 if(strcmp(p.Results.mode, 'rand'))
     
     % number of randomly selected image patches
-    q = p.Results.nBlocks;
+    q = p.Results.nPatches;
     
     % select q random locations in image (upper left block corners)
     x = floor(rand(1,1,q)*(imH-blockSize))+1;
@@ -62,6 +66,12 @@ if(strcmp(p.Results.mode, 'rand'))
     
     % extract and vectorize blocks
     patches = image(Xp+(Yp-1)*imW);
+    
+    
+    
+%     h = fspecial('log', blockSize);
+%     patches = patches .* repmat(h, 1, 1, size(patches, 3));
+    
     patchesVectorized = reshape(patches, [blockSize^2, q]);
     
     patchesVectorized = unique(patchesVectorized', 'rows')';

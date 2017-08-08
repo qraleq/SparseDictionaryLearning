@@ -8,7 +8,6 @@ nVis = floor(size(D, 2)/blockSize)*blockSize;
 
 dictVisual = col2im(D(:,1:nVis), [blockSize, blockSize], size(D(:,1:nVis)), 'distinct');
 
-figure
 imagesc(dictVisual), axis image
 
 xticks(0.5:blockSize:size(dictVisual,2))
